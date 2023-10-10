@@ -13,6 +13,10 @@ class CommandLineParser(cmd.Cmd):
     def do_quit(self, args):
         "Exit the program"
         sys.exit(0)
+    
+    def do_EOF(self, line):
+        """Handle EOF"""
+        return True
 
 
 def main(argc, argv, ioflag=True):
