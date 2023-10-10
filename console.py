@@ -4,7 +4,7 @@ import sys
 import cmd
 
 
-class CommandLineParser(cmd.Cmd):
+class HBNBCommand(cmd.Cmd):
     """A command-line parser for interactive use.
 
     This class provides a command-line interface for interactive use. Users can
@@ -16,7 +16,7 @@ class CommandLineParser(cmd.Cmd):
     prompt = '(hbnb) '
 
     def __init__(self, completekey="tab", stdin=None, stdout=None):
-        """Initialize the CommandLineParser.
+        """Initialize the HBNBCommand.
 
         Args:
             completekey (str, optional): The key to trigger tab completion. Defaults to "tab".
@@ -52,7 +52,7 @@ def main(argc, argv, isstdin=True):
     """Entrypoint for the command-line application
 
     This function serves as the entry point for the command-line application. It creates
-    an instance of CommandLineParser and processes the provided arguments.
+    an instance of HBNBCommand and processes the provided arguments.
 
     Args:
         argc (int): The number of command-line arguments.
@@ -62,7 +62,7 @@ def main(argc, argv, isstdin=True):
     Returns:
         None
     """
-    parser = CommandLineParser()
+    parser = HBNBCommand()
     if not isstdin:
         parser.onecmd(argv)
     else:
