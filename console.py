@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 
+"""
+console.py - Entrypoint for AirBnB CLI application
+
+This module provides the main entrypoint for the program. It 
+parses and handles the commands.
+
+Classes:
+    HBNBCommand: A command-line parser class.
+"""
+
 import sys
 import cmd
 
