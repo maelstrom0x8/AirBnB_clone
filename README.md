@@ -1,11 +1,8 @@
-# AirBnB Clone - The console
+## AirBnB Clone - CLI
 
-## Description
-This project features the first part of the AirBnB project which is the 'console'. The console will serve as a command line interpreter for this application specifically for:
-- creating aa new object (e.g a new User or a new Place)
-- Retrieving an object from a file, a database
-- Do operation on objects(count compute stats, etc)
-- Update attributes of an object
-- Destroy an object
+### Description
+The AirBnB Clone Application is a command-line tool that allows users to search for Airbnb listings, make reservations, and manage their bookings directly from the terminal.
 
-
+### Usage
+Run `./console.py <command>` <br>
+Or `echo <command> | ./console.py`
