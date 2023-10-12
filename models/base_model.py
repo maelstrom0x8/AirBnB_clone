@@ -3,9 +3,11 @@
 import uuid
 from datetime import datetime
 from models import storage
+
+
 class BaseModel():
     """The baseModel class"""
-    
+
     def __init__(self, *args, **kwargs):
         """Initialization function"""
         valid_keys = ["created_at", "updated_at"]
@@ -39,5 +41,5 @@ class BaseModel():
             if (key == "created_at" or key == "updated_at"):
                 value = value.isoformat()
             result[key] = value
-            result["__class__"] = self.__class__.__name__    
+            result["__class__"] = self.__class__.__name__
         return result
