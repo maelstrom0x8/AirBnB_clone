@@ -63,6 +63,16 @@ class AirBnBService:
             self.__delete_instance(model, _id)
 
     def fetch_model_by_id(self, model, id):
+        module_name = self.__get_module(model)
+        b, module = self.__module_exists(module_name)
+        if b:
+            entity = getattr(module, model)
+            if entity is None:
+                print("** class doesn't exist **")
+                return
+        else:
+            print("** class doesn't exist **")
+            return
         key = '.'.join([model, id])
         _model = self.storage.all().get(key, None)
         if _model is None:
@@ -100,6 +110,7 @@ class AirBnBService:
     def __save_instance(self, module, class_name, *args):
         entity = getattr(module, class_name)
         instance = entity(*args)
+        print(instance.id)
         instance.save()
 
     def __delete_instance(self, model, _id):
@@ -202,7 +213,8 @@ class HBNBCommand(cmd.Cmd):
         return self.bnbService.delete_model_by_id(_model, _id)
 
     def do_all(self, *args):
-        return self.bnbService.fetch_all(args[0])
+        _args = args[0].split(' ')
+        return self.bnbService.fetch_all(_args[0])
 
     def do_show(self, *args):
         _args = (str(args[0]).split(' '))
@@ -224,6 +236,10 @@ class HBNBCommand(cmd.Cmd):
 
     def cmdloop(self, intro=None):
         super().cmdloop(intro)
+
+    def emptyline(self) -> bool:
+        return False
+    
 
     def process_args(self, argc, argv, isstdin=True):
         """Entrypoint for the command-line application
