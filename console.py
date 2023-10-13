@@ -71,6 +71,16 @@ class AirBnBService:
         print(_model)
 
     def fetch_all(self, model):
+        module_name = self.__get_module(model)
+        b, module = self.__module_exists(module_name)
+        if b:
+            entity = getattr(module, model)
+            if entity is None:
+                print("** class doesn't exist **")
+                return
+        else:
+            print("** class doesn't exist **")
+            return
         _models = self.storage.all()
         for e in _models.values():
             if e.__class__.__name__ == model:

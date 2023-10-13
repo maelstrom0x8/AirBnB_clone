@@ -35,13 +35,17 @@ class FileStorage():
         from models.place import Place
         from models.state import State
         from models.user import User
+        from models.amenity import Amenity
+        from models.review import Review
 
         class_map = {
             'BaseModel': BaseModel,
             'City': City,
             'Place': Place,
             'State': State,
-            'User': User
+            'User': User,
+            'Amenity': Amenity,
+            'Review': Review
         }
         try:
             with open(self.__file_path, 'r') as f:
