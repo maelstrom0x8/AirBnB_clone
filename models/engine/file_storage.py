@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """A module that defines the storage class"""
 import json
+from typing import Dict
 
 
 class FileStorage():
     """File storage class"""
     __file_path = "file.json"
-    __objects = {}
+    __objects: Dict[str, object] = {}
 
     def all(self):
         """returns list of data"""
@@ -14,6 +15,7 @@ class FileStorage():
 
     def new(self, obj):
         """adds new data to the list"""
+        # print("save: " + str(obj))
         key = f"{obj.__class__.__name__}.{obj.id}"
         FileStorage.__objects[key] = obj
 
@@ -38,8 +40,8 @@ class FileStorage():
         class_map = {
             'BaseModel': BaseModel,
             'City': City,
-            'place': Place,
-            'state': State,
+            'Place': Place,
+            'State': State,
             'User': User
         }
         try:

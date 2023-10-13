@@ -13,6 +13,8 @@ Classes:
 import importlib
 import sys
 import cmd
+from types import ModuleType
+from models.base_model import BaseModel
 
 from models.engine.file_storage import FileStorage
 
@@ -21,27 +23,64 @@ class AirBnBService:
 
     storage = FileStorage()
 
-    def create(self, *args):
-        class_name = str(args[0][0])
-        _module_name = 'base_model' if args[0][0] == 'BaseModel' else str(
-            args[0][0]).lower()
-        try:
-            _module = importlib.import_module('models.'+_module_name)
-            entity = getattr(_module, class_name)
-            instance = entity(*args)
-            self.storage.new(instance)
-        except (ModuleNotFoundError, AttributeError):
+    def create(self, args):
+        class_name = args
+        _module_name = self.__get_module(args)
+        b, module = self.__module_exists(_module_name)
+        if b is False:
             print("** class doesn't exist **")
-            return None
-
-    def save(self):
+            return
+        else:
+            self.__save_instance(module, class_name, args)
+            return
+        
+    def update(self, args):
         pass
 
-    def destroy(self):
-        pass
+    def delete_model_by_id(self, model, _id):
+        _module_name = self.__get_module(model)
+        b, module = self.__module_exists(_module_name)
+        if not b:
+            print("** class doesn't exist **")
+            return
+        else:
+            self.__delete_instance(model, _id)
 
-    def fetch_all(self, model, id):
-        pass
+    def fetch_model_by_id(self, model, id):
+        _models = self.storage.all()
+        for e in _models.values():
+            if e.__class__.__name__ == model and e.id == id:
+                print(e)
+        return
+    
+    def fetch_all(self, model):
+        _models = self.storage.all()
+        for e in _models.values():
+            if e.__class__.__name__ == model:
+                print(e)
+        return
+    
+    def __get_module(self, name):
+        return 'base_model' if name == 'BaseModel' else str(name).lower()
+    
+    def __module_exists(self, module_name):
+        try:
+            _module = importlib.import_module('models.'+ module_name)
+            return (True, _module)
+        except (ModuleNotFoundError, AttributeError):
+            return (False, None)
+        
+    def __save_instance(self, module, class_name, *args):
+        entity = getattr(module, class_name)
+        instance = entity(*args)
+        instance.save()
+
+    def __delete_instance(self, model, _id):
+        key = '.'.join([model, _id])
+        if self.storage.all().get(key, None) is None:
+            print('** no instance found **')
+            return
+        self.storage.all().pop(key)
 
 class HBNBCommand(cmd.Cmd):
     """A command-line parser for interactive use.
@@ -84,21 +123,36 @@ class HBNBCommand(cmd.Cmd):
         return True
 
     def do_create(self, *args):
-        if len(args) < 1 or args[0] == '':
+        _args = (str(args[0]).split(' '))
+        if len(_args) < 1 or args[0] == '':
             print('** class name missing **')
             return
 
-        if self.bnbService.create(args) is None:
+        if self.bnbService.create(_args[0]) is None:
             return
 
     def do_update(self, *args):
         pass
 
     def do_destroy(self, *args):
-        pass
+        _args = (str(args[0]).split(' '))
+        _model = ''
+        _id = ''
+        try:
+            _model = _args[0]
+            _id = _args[1]
+        except (ValueError, IndexError):
+            if len(_model) == 0:
+                print('** class name missing **')
+                return
+            if _id is None or len(_id) == 0:
+                print('** instance id missing **')
+                return
+
+        return self.bnbService.delete_model_by_id(_model, _id)
 
     def do_all(self, *args):
-        pass
+        return self.bnbService.fetch_all(args[0])
 
     def do_show(self, *args):
         _args = (str(args[0]).split(' '))
@@ -115,7 +169,7 @@ class HBNBCommand(cmd.Cmd):
                 print('** instance id missing **')
                 return
         
-        if self.bnbService.fetch_all(_model, _id) is None:
+        if self.bnbService.fetch_model_by_id(_model, _id) is None:
             return
 
     def cmdloop(self, intro=None):
