@@ -28,12 +28,25 @@ class FileStorage():
             json.dump(temp, f)
 
     def reload(self):
-        """reloads stored data to the list of objects"""
+        """reloads previously stored data to the list of objects"""
         from models.base_model import BaseModel
+        from models.city import City
+        from models.place import Place
+        from models.state import State
+        from models.user import User
+
+        class_map = {
+            'BaseModel': BaseModel,
+            'City': City,
+            'place': Place,
+            'state': State,
+            'User': User
+        }
         try:
             with open(self.__file_path, 'r') as f:
                 result = json.load(f)
-                for i in result:
-                    FileStorage.__objects[i] = BaseModel(**result[i])
+                for (key, value) in result.items():
+                    FileStorage.__objects[key] = class_map[value["__class__"]](
+                        **value)
         except FileNotFoundError:
             pass
