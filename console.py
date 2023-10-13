@@ -63,11 +63,12 @@ class AirBnBService:
             self.__delete_instance(model, _id)
 
     def fetch_model_by_id(self, model, id):
-        _models = self.storage.all()
-        for e in _models.values():
-            if e.__class__.__name__ == model and e.id == id:
-                print(e)
-        return
+        key = '.'.join([model, id])
+        _model = self.storage.all().get(key, None)
+        if _model is None:
+            print('** instance not found **')
+            return
+        print(_model)
 
     def fetch_all(self, model):
         _models = self.storage.all()
