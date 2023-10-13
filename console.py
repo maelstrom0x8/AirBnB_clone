@@ -34,7 +34,7 @@ class AirBnBService:
         else:
             self.__save_instance(module, class_name, args)
             return
-        
+
     def update_model_attribute(self, model, id, attr, value):
         _module_name = self.__get_module(model)
         b, module = self.__module_exists(_module_name)
@@ -53,10 +53,9 @@ class AirBnBService:
             print('** no instance found **')
             return
 
-
     def delete_model_by_id(self, model, _id):
         _module_name = self.__get_module(model)
-        b, module = self.__module_exists(_module_name)
+        b, _ = self.__module_exists(_module_name)
         if not b:
             print("** class doesn't exist **")
             return
@@ -69,24 +68,24 @@ class AirBnBService:
             if e.__class__.__name__ == model and e.id == id:
                 print(e)
         return
-    
+
     def fetch_all(self, model):
         _models = self.storage.all()
         for e in _models.values():
             if e.__class__.__name__ == model:
                 print(e)
         return
-    
+
     def __get_module(self, name):
         return 'base_model' if name == 'BaseModel' else str(name).lower()
-    
+
     def __module_exists(self, module_name):
         try:
-            _module = importlib.import_module('models.'+ module_name)
+            _module = importlib.import_module('models.' + module_name)
             return (True, _module)
         except (ModuleNotFoundError, AttributeError):
             return (False, None)
-        
+
     def __save_instance(self, module, class_name, *args):
         entity = getattr(module, class_name)
         instance = entity(*args)
@@ -98,6 +97,7 @@ class AirBnBService:
             print('** no instance found **')
             return
         self.storage.all().pop(key)
+
 
 class HBNBCommand(cmd.Cmd):
     """A command-line parser for interactive use.
@@ -169,10 +169,10 @@ class HBNBCommand(cmd.Cmd):
             if _value is None or len(_value) == 0:
                 print('** value missing **')
                 return
-        
+
         return self.bnbService.update_model_attribute(_model, _id,
                                                       _attr, _value)
-        
+
     def do_destroy(self, *args):
         _args = (str(args[0]).split(' '))
         _model = ''
@@ -207,7 +207,7 @@ class HBNBCommand(cmd.Cmd):
             if _id is None or len(_id) == 0:
                 print('** instance id missing **')
                 return
-        
+
         if self.bnbService.fetch_model_by_id(_model, _id) is None:
             return
 
