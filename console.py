@@ -34,8 +34,22 @@ class AirBnBService:
             self.__save_instance(module, class_name, args)
             return
         
-    def update(self, args):
-        pass
+    def update_model_attribute(self, model, id, attr, value):
+        _module_name = self.__get_module(model)
+        b, module = self.__module_exists(_module_name)
+        if b is False:
+            print("** class doesn't exist **")
+            return
+        key = '.'.join([model, id])
+        instance: object = self.storage.all().get(key, None)
+        if instance is not None:
+            instance.__setattr__(attr, value)
+            self.storage.all()[key] = instance
+            self.storage.save()
+        else:
+            print('** no instance found **')
+            return
+
 
     def delete_model_by_id(self, model, _id):
         _module_name = self.__get_module(model)
@@ -132,8 +146,30 @@ class HBNBCommand(cmd.Cmd):
             return
 
     def do_update(self, *args):
-        pass
-
+        _args = (str(args[0]).split(' '))
+        _model, _attr, _id, _value = list([str()] * 4)
+        try:
+            _model = _args[0]
+            _id = _args[1]
+            _attr = _args[2]
+            _value = _args[3]
+        except (ValueError, IndexError):
+            if _model is None or len(_model) == 0:
+                print('** class name missing **')
+                return
+            if _id is None or len(_id) == 0:
+                print('** instance id missing **')
+                return
+            if _attr is None or len(_attr) == 0:
+                print('** attribute name missing **')
+                return
+            if _value is None or len(_value) == 0:
+                print('** value missing **')
+                return
+        
+        return self.bnbService.update_model_attribute(_model, _id,
+                                                      _attr, _value)
+        
     def do_destroy(self, *args):
         _args = (str(args[0]).split(' '))
         _model = ''
