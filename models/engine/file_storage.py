@@ -15,7 +15,6 @@ class FileStorage():
 
     def new(self, obj):
         """adds new data to the list"""
-        # print("save: " + str(obj))
         key = f"{obj.__class__.__name__}.{obj.id}"
         FileStorage.__objects[key] = obj
 

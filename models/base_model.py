@@ -17,7 +17,6 @@ class BaseModel():
             self.updated_at = datetime.now()
             storage.new(self)
         else:
-            print(kwargs)
             self.id = kwargs.get("id", str(uuid.uuid4()))
             for (key, value) in kwargs.items():
                 if key == "created_at" or key == "updated_at":

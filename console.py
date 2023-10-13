@@ -10,6 +10,7 @@ Classes:
     HBNBCommand: A command-line parser class.
 """
 
+from datetime import datetime
 import importlib
 import sys
 import cmd
@@ -41,9 +42,11 @@ class AirBnBService:
             print("** class doesn't exist **")
             return
         key = '.'.join([model, id])
-        instance: object = self.storage.all().get(key, None)
+        instance: BaseModel = self.storage.all().get(key, None)
         if instance is not None:
             instance.__setattr__(attr, value)
+            instance.updated_at = datetime.now()
+            print(instance)
             self.storage.all()[key] = instance
             self.storage.save()
         else:
