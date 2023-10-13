@@ -3,16 +3,45 @@
 """
 console.py - Entrypoint for AirBnB CLI application
 
-This module provides the main entrypoint for the program. It 
+This module provides the main entrypoint for the program. It
 parses and handles the commands.
 
 Classes:
     HBNBCommand: A command-line parser class.
 """
 
+import importlib
 import sys
 import cmd
 
+from models.engine.file_storage import FileStorage
+
+
+class AirBnBService:
+
+    storage = FileStorage()
+
+    def create(self, *args):
+        class_name = str(args[0][0])
+        _module_name = 'base_model' if args[0][0] == 'BaseModel' else str(
+            args[0][0]).lower()
+        try:
+            _module = importlib.import_module('models.'+_module_name)
+            entity = getattr(_module, class_name)
+            instance = entity(*args)
+            self.storage.new(instance)
+        except (ModuleNotFoundError, AttributeError):
+            print("** class doesn't exist **")
+            return None
+
+    def save(self):
+        pass
+
+    def destroy(self):
+        pass
+
+    def fetch_all(self, model, id):
+        pass
 
 class HBNBCommand(cmd.Cmd):
     """A command-line parser for interactive use.
@@ -25,6 +54,7 @@ class HBNBCommand(cmd.Cmd):
         prompt (str): The command prompt to display.
     """
     prompt = '(hbnb) '
+    bnbService = AirBnBService()
 
     def __init__(self, completekey="tab", stdin=None, stdout=None):
         """Initialize the HBNBCommand.
@@ -52,6 +82,41 @@ class HBNBCommand(cmd.Cmd):
             bool: True to indicate the end of input.
         """
         return True
+
+    def do_create(self, *args):
+        if len(args) < 1 or args[0] == '':
+            print('** class name missing **')
+            return
+
+        if self.bnbService.create(args) is None:
+            return
+
+    def do_update(self, *args):
+        pass
+
+    def do_destroy(self, *args):
+        pass
+
+    def do_all(self, *args):
+        pass
+
+    def do_show(self, *args):
+        _args = (str(args[0]).split(' '))
+        _model = ''
+        _id = ''
+        try:
+            _model = _args[0]
+            _id = _args[1]
+        except (ValueError, IndexError):
+            if len(_model) == 0:
+                print('** class name missing **')
+                return
+            if _id is None or len(_id) == 0:
+                print('** instance id missing **')
+                return
+        
+        if self.bnbService.fetch_all(_model, _id) is None:
+            return
 
     def cmdloop(self, intro=None):
         super().cmdloop(intro)
