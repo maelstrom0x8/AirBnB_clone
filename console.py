@@ -251,7 +251,8 @@ class HBNBCommand(cmd.Cmd):
                 return super().precmd(line)
         except (AttributeError):
             try:
-                args = [self.remove_quotes(x) for x in self.tokenize_string(line)]
+                args = [self.remove_quotes(x)
+                        for x in self.tokenize_string(line)]
                 _entity = args[0]
                 _method = args[1]
                 _args = args[2:]
@@ -260,9 +261,9 @@ class HBNBCommand(cmd.Cmd):
         largs = [_method, _entity] + _args
         _cmd = ' '.join(largs)
         return super().precmd(_cmd)
-    
+
     def remove_quotes(self, input: str):
-        if input.startswith('"') and input.endswith('"'):
+        if input.startswith(('"', "'")) and input.endswith(('"', "'")):
             return input[1:-1]
         else:
             return input
@@ -270,7 +271,8 @@ class HBNBCommand(cmd.Cmd):
     def tokenize_string(self, input_string):
         if input_string is None or len(input_string) == 0:
             return ['']
-        pattern = r'([A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*)\.([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\)'
+        pattern = r'([A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*)\.([A \
+        -Za-z_][A-Za-z0-9_]*)\(([^)]*)\)'
 
         match = re.match(pattern, input_string)
         if match:
@@ -280,37 +282,6 @@ class HBNBCommand(cmd.Cmd):
             return [class_name, method_name] + args
 
         return None
-
-    def process_args(self, argc, argv, isstdin=True):
-        """Entrypoint for the command-line application
-
-        This function serves as the entry point for the command-line
-        application. It creates an instance of HBNBCommand and processes
-        the provided arguments.
-
-        Args:
-            argc (int): The number of command-line arguments.
-            argv (list): A list of command-line arguments.
-            isstdin (bool, optional): Indicates whether input is from stdin.
-            Defaults to True.
-
-        Returns:
-            None
-        """
-        import os
-
-        argc, argv = len(sys.argv), sys.argv
-
-        if not os.isatty(0):
-            argv = sys.stdin.read().strip('\n')
-            self.process_args(argc, argv, False)
-            sys.exit(1)
-
-        self.process_args(argc, argv)
-        if not isstdin:
-            self.onecmd(argv)
-        else:
-            self.cmdloop()
 
 
 if __name__ == '__main__':
