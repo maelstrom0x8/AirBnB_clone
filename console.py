@@ -10,14 +10,14 @@ Classes:
     HBNBCommand: A command-line parser class.
 """
 
-from datetime import datetime
+import cmd
 import importlib
+import os
 import re
 import sys
-import cmd
-from types import ModuleType
-from models.base_model import BaseModel
+from datetime import datetime
 
+from models.base_model import BaseModel
 from models.engine.file_storage import FileStorage
 
 
@@ -263,6 +263,11 @@ class HBNBCommand(cmd.Cmd):
 
     def emptyline(self) -> bool:
         return False
+
+    def preloop(self) -> None:
+        if not os.isatty(0):
+            self.prompt = ''
+            self.onecmd('')
 
     def precmd(self, line: str):
         _method = ''
