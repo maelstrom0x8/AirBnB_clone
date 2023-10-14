@@ -98,6 +98,22 @@ class AirBnBService:
                 print(e)
         return
 
+    def fetch_model_count(self, model):
+        module_name = self.__get_module(model)
+        b, module = self.__module_exists(module_name)
+        if b:
+            entity = getattr(module, model)
+            if entity is None:
+                print("** class doesn't exist **")
+                return
+        else:
+            print("** class doesn't exist **")
+            return
+        _models = [x for x in self.storage.all().values()
+                   if x.__class__.__name__ == model]
+        print(len(_models))
+        return
+
     def __get_module(self, name):
         return 'base_model' if name == 'BaseModel' else str(name).lower()
 
@@ -216,6 +232,13 @@ class HBNBCommand(cmd.Cmd):
     def do_all(self, *args):
         _args = args[0].split(' ')
         return self.bnbService.fetch_all(_args[0])
+
+    def do_count(self, *args):
+        _args = args[0].split(' ')
+        if len(_args) < 1:
+            print('** class name missing **')
+
+        return self.bnbService.fetch_model_count(_args[0])
 
     def do_show(self, *args):
         _args = (str(args[0]).split(' '))
