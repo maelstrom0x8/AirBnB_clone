@@ -12,6 +12,7 @@ Classes:
 
 from datetime import datetime
 import importlib
+import re
 import sys
 import cmd
 from types import ModuleType
@@ -239,7 +240,46 @@ class HBNBCommand(cmd.Cmd):
 
     def emptyline(self) -> bool:
         return False
+
+    def precmd(self, line: str):
+        _method = ''
+        _entity = ''
+        _args = []
+        try:
+            _fn = 'do_' + line.split(' ')[0]
+            if getattr(self, _fn) is not None:
+                return super().precmd(line)
+        except (AttributeError):
+            try:
+                args = [self.remove_quotes(x) for x in self.tokenize_string(line)]
+                _entity = args[0]
+                _method = args[1]
+                _args = args[2:]
+            except (ValueError, TypeError, IndexError):
+                pass
+        largs = [_method, _entity] + _args
+        _cmd = ' '.join(largs)
+        return super().precmd(_cmd)
     
+    def remove_quotes(self, input: str):
+        if input.startswith('"') and input.endswith('"'):
+            return input[1:-1]
+        else:
+            return input
+
+    def tokenize_string(self, input_string):
+        if input_string is None or len(input_string) == 0:
+            return ['']
+        pattern = r'([A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*)\.([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\)'
+
+        match = re.match(pattern, input_string)
+        if match:
+            class_name = match.group(1)
+            method_name = match.group(3)
+            args = [arg.strip() for arg in match.group(4).split(',')]
+            return [class_name, method_name] + args
+
+        return None
 
     def process_args(self, argc, argv, isstdin=True):
         """Entrypoint for the command-line application
