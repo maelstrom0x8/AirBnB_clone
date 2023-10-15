@@ -7,7 +7,8 @@ This module provides the main entrypoint for the program. It
 parses and handles the commands.
 
 Classes:
-    HBNBCommand: A command-line parser class.
+    HBNBService: A service class to manage creation, updates, and deletions of entities.
+    HBNBCommand: A command-line parser class for interactive use.
 """
 
 import cmd
@@ -21,11 +22,20 @@ from models.base_model import BaseModel
 from models.engine.file_storage import FileStorage
 
 
-class AirBnBService:
+class HBNBService:
+    """
+    A service class to manage creation, updates, and deletions of entities.
+    """
 
     storage = FileStorage()
 
     def create(self, args):
+        """
+        Create a new model.
+
+        Args:
+            args (str): The entity's class name.
+        """
         class_name = args
         _module_name = self.__get_module(args)
         b, module = self.__module_exists(_module_name)
@@ -37,8 +47,17 @@ class AirBnBService:
             return
 
     def update_model_attribute(self, model, id, attr, value):
+        """
+        Update model data.
+
+        Args:
+            model (str): The entity's class name.
+            id (str): The entity's ID.
+            attr (str): The attribute to update.
+            value (str): The new value for the attribute.
+        """
         _module_name = self.__get_module(model)
-        b, module = self.__module_exists(_module_name)
+        b, _ = self.__module_exists(_module_name)
         if b is False:
             print("** class doesn't exist **")
             return
@@ -55,6 +74,13 @@ class AirBnBService:
             return
 
     def delete_model_by_id(self, model, _id):
+        """
+        Remove a model by its ID.
+
+        Args:
+            model (str): The entity's class name.
+            _id (str): The entity's ID.
+        """
         _module_name = self.__get_module(model)
         b, _ = self.__module_exists(_module_name)
         if not b:
@@ -64,6 +90,13 @@ class AirBnBService:
             self.__delete_instance(model, _id)
 
     def fetch_model_by_id(self, model, id):
+        """
+        Print a model instance.
+
+        Args:
+            model (str): The entity's class name.
+            id (str): The entity's ID.
+        """
         module_name = self.__get_module(model)
         b, module = self.__module_exists(module_name)
         if b:
@@ -82,6 +115,12 @@ class AirBnBService:
         print(_model)
 
     def fetch_all(self, model):
+        """
+        Lists all models of a class.
+
+        Args:
+            model (str): The entity's class name.
+        """
         module_name = self.__get_module(model)
         b, module = self.__module_exists(module_name)
         if b:
@@ -99,6 +138,12 @@ class AirBnBService:
         return
 
     def fetch_model_count(self, model):
+        """
+        Prints the number of entities of a class.
+
+        Args:
+            model (str): The entity's class name.
+        """
         module_name = self.__get_module(model)
         b, module = self.__module_exists(module_name)
         if b:
@@ -149,7 +194,7 @@ class HBNBCommand(cmd.Cmd):
         prompt (str): The command prompt to display.
     """
     prompt = '(hbnb) '
-    bnbService = AirBnBService()
+    bnbService = HBNBService()
 
     def __init__(self, completekey="tab", stdin=None, stdout=None):
         """Initialize the HBNBCommand.
