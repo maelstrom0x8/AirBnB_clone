@@ -164,21 +164,15 @@ class HBNBCommand(cmd.Cmd):
         super().__init__(completekey, stdin, stdout)
 
     def do_quit(self, args):
-        """Quit command to exit the program"""
+        """Exit the program"""
         sys.exit(0)
 
     def do_EOF(self, line):
-        """Handle EOF (End of File).
-
-        Args:
-            line (str): The current line of input.
-
-        Returns:
-            bool: True to indicate the end of input.
-        """
+        """Handle EOF"""
         return True
 
     def do_create(self, *args):
+        """Create a new model"""
         _args = (str(args[0]).split(' '))
         if len(_args) < 1 or args[0] == '':
             print('** class name missing **')
@@ -188,6 +182,7 @@ class HBNBCommand(cmd.Cmd):
             return
 
     def do_update(self, *args):
+        """Update model data"""
         _args = (str(args[0]).split(' '))
         _model, _attr, _id, _value = list([str()] * 4)
         try:
@@ -213,6 +208,7 @@ class HBNBCommand(cmd.Cmd):
                                                       _attr, _value)
 
     def do_destroy(self, *args):
+        """Remove a model by id"""
         _args = (str(args[0]).split(' '))
         _model = ''
         _id = ''
@@ -230,10 +226,12 @@ class HBNBCommand(cmd.Cmd):
         return self.bnbService.delete_model_by_id(_model, _id)
 
     def do_all(self, *args):
+        """Lists all models of a class"""
         _args = args[0].split(' ')
         return self.bnbService.fetch_all(_args[0])
 
     def do_count(self, *args):
+        """Prints the number of a model class"""
         _args = args[0].split(' ')
         if len(_args) < 1:
             print('** class name missing **')
@@ -241,6 +239,7 @@ class HBNBCommand(cmd.Cmd):
         return self.bnbService.fetch_model_count(_args[0])
 
     def do_show(self, *args):
+        """Prints a model instance"""
         _args = (str(args[0]).split(' '))
         _model = ''
         _id = ''
@@ -278,14 +277,15 @@ class HBNBCommand(cmd.Cmd):
             if getattr(self, _fn) is not None:
                 return super().precmd(line)
         except (AttributeError):
-            try:
-                args = [self.remove_quotes(x)
-                        for x in self.tokenize_string(line)]
-                _entity = args[0]
-                _method = args[1]
-                _args = args[2:]
-            except (ValueError, TypeError, IndexError):
-                pass
+            print('** Unknown Syntax **')
+        try:
+            args = [self.remove_quotes(x)
+                    for x in self.tokenize_string(line)]
+            _entity = args[0]
+            _method = args[1]
+            _args = args[2:]
+        except (ValueError, TypeError, IndexError):
+            pass
         largs = [_method, _entity] + _args
         _cmd = ' '.join(largs)
         return super().precmd(_cmd)
