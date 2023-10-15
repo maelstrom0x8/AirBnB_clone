@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """A module that defines the storage class"""
 import json
+from typing import Dict
 
 
 class FileStorage():
     """File storage class"""
     __file_path = "file.json"
-    __objects = {}
+    __objects: Dict[str, object] = {}
 
     def all(self):
         """returns list of data"""
@@ -34,13 +35,17 @@ class FileStorage():
         from models.place import Place
         from models.state import State
         from models.user import User
+        from models.amenity import Amenity
+        from models.review import Review
 
         class_map = {
             'BaseModel': BaseModel,
             'City': City,
-            'place': Place,
-            'state': State,
-            'User': User
+            'Place': Place,
+            'State': State,
+            'User': User,
+            'Amenity': Amenity,
+            'Review': Review
         }
         try:
             with open(self.__file_path, 'r') as f:
