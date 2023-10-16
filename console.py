@@ -7,7 +7,8 @@ This module provides the main entrypoint for the program. It
 parses and handles the commands.
 
 Classes:
-    HBNBService: A service class to manage creation, updates, and deletions of entities.
+    HBNBService: A service class to manage creation, updates, and
+    deletions of entities.
     HBNBCommand: A command-line parser class for interactive use.
 """
 
@@ -314,26 +315,27 @@ class HBNBCommand(cmd.Cmd):
             self.onecmd('')
 
     def precmd(self, line: str):
-        _method = ''
-        _entity = ''
-        _args = []
         try:
             _fn = 'do_' + line.split(' ')[0]
             if getattr(self, _fn) is not None:
                 return super().precmd(line)
         except (AttributeError):
-            print('** Unknown Syntax **')
-        try:
-            args = [self.remove_quotes(x)
-                    for x in self.tokenize_string(line)]
-            _entity = args[0]
-            _method = args[1]
-            _args = args[2:]
-        except (ValueError, TypeError, IndexError):
-            pass
-        largs = [_method, _entity] + _args
-        _cmd = ' '.join(largs)
-        return super().precmd(_cmd)
+            try:
+                ln = self.preprocess_input(line)
+                return super().precmd(ln)
+            except (AttributeError, TypeError, ValueError, IndexError):
+                return super().precmd(line)
+
+        return super().precmd(line)
+
+    def preprocess_input(self, line: str):
+        args = [self.remove_quotes(x)
+                for x in self.tokenize_string(line)]
+        _entity = args[0]
+        _method = args[1]
+        _args = args[2:]
+        if getattr(self, 'do_' + _method) is not None:
+            return ' '.join([_method, _entity] + _args)
 
     def remove_quotes(self, input: str):
         if input.startswith(('"', "'")) and input.endswith(('"', "'")):
