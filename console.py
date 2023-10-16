@@ -211,11 +211,12 @@ class HBNBCommand(cmd.Cmd):
 
     def do_quit(self, args):
         """Exit the program"""
-        return self.prompt
+
+        return True
 
     def do_EOF(self, line):
         """Handle EOF"""
-        return self.prompt
+        return True
 
     def do_create(self, *args):
         """Create a new model"""
