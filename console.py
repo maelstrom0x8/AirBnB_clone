@@ -133,10 +133,7 @@ class HBNBService:
             print("** class doesn't exist **")
             return
         _models = self.storage.all()
-        for e in _models.values():
-            if e.__class__.__name__ == model:
-                print(e)
-        return
+        return  [str(x) for x in _models.values() if x.__class__.__name__ == model]
 
     def fetch_model_count(self, model):
         """
@@ -182,6 +179,7 @@ class HBNBService:
             print('** no instance found **')
             return
         self.storage.all().pop(key)
+        self.storage.save()
 
 
 class HBNBCommand(cmd.Cmd):
@@ -211,13 +209,11 @@ class HBNBCommand(cmd.Cmd):
 
     def do_quit(self, args):
         """Quit command to exit the program"""
-        print()
-        sys.exit(0)
+        return True
 
     def do_EOF(self, line):
         """Handle EOF"""
-        print()
-        sys.exit(0)
+        return True
 
     def do_create(self, *args):
         """Create a new model"""
@@ -276,7 +272,9 @@ class HBNBCommand(cmd.Cmd):
     def do_all(self, *args):
         """Lists all models of a class"""
         _args = args[0].split(' ')
-        return self.bnbService.fetch_all(_args[0])
+        result = self.bnbService.fetch_all(_args[0])
+        if result is not None and len(result) > 0:
+            print(result)
 
     def do_count(self, *args):
         """Prints the number of a model class"""
