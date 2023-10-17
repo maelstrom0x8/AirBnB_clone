@@ -210,7 +210,7 @@ class HBNBCommand(cmd.Cmd):
         super().__init__(completekey, stdin, stdout)
 
     def do_quit(self, args):
-        """Exit the program"""
+        """Quit command to exit the program"""
 
         return True
 
