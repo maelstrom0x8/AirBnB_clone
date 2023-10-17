@@ -111,7 +111,7 @@ class HBNBService:
         key = '.'.join([model, id])
         _model = self.storage.all().get(key, None)
         if _model is None:
-            print('** instance not found **')
+            print('** no instance found **')
             return
         print(_model)
 
