@@ -105,7 +105,7 @@ class TestCommandDoc(unittest.TestCase):
     def test_EOF_doc(self):
         with patch('sys.stdout', new=StringIO()) as f:
             HBNBCommand().onecmd("help EOF")
-            self.assertEqual('Handle EOF', f.getvalue().strip())
+            self.assertEqual('Ctrl-D to exit the program', f.getvalue().strip())
 
     def test_update_doc(self):
         with patch('sys.stdout', new=StringIO()) as f:

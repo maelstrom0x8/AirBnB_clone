@@ -220,7 +220,7 @@ class HBNBCommand(cmd.Cmd):
         return True
 
     def do_EOF(self, line):
-        """Handle EOF"""
+        """Ctrl-D to exit the program"""
         return True
 
     def do_create(self, *args):
