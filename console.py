@@ -16,11 +16,26 @@ import cmd
 import importlib
 import os
 import re
-import sys
 from datetime import datetime
+from types import ModuleType
 
 from models.base_model import BaseModel
 from models.engine.file_storage import FileStorage
+
+
+class HBNBUtils:
+
+    @staticmethod
+    def to_module_format(string: str) -> str:
+        return 'base_model' if string == 'BaseModel' else str(string).lower()
+
+    @staticmethod
+    def get_module(module_name: str, root: str = 'models') -> ModuleType:
+        try:
+            _module = importlib.import_module(root + '.' + module_name)
+            return _module
+        except (ModuleNotFoundError, AttributeError):
+            return None
 
 
 class HBNBService:
@@ -30,22 +45,23 @@ class HBNBService:
 
     storage = FileStorage()
 
-    def create(self, args):
+    def create(self, clazz: str):
         """
         Create a new model.
 
         Args:
             args (str): The entity's class name.
         """
-        class_name = args
-        _module_name = self.__get_module(args)
-        b, module = self.__module_exists(_module_name)
-        if b is False:
+        module = self.__get_module(clazz)
+        if module is None:
             print("** class doesn't exist **")
-            return
+            return None
         else:
-            self.__save_instance(module, class_name, args)
-            return
+            _model_id: str = self.__save_instance(module, clazz)
+            if _model_id is not None:
+                return _model_id
+            else:
+                return None
 
     def update_model_attribute(self, model, id, attr, value):
         """
@@ -57,22 +73,22 @@ class HBNBService:
             attr (str): The attribute to update.
             value (str): The new value for the attribute.
         """
-        _module_name = self.__get_module(model)
-        b, _ = self.__module_exists(_module_name)
-        if b is False:
-            print("** class doesn't exist **")
-            return
-        key = '.'.join([model, id])
-        instance: BaseModel = self.storage.all().get(key, None)
-        if instance is not None:
-            instance.__setattr__(attr, value)
-            instance.updated_at = datetime.now()
-            print(instance)
-            self.storage.all()[key] = instance
-            self.storage.save()
+        module = self.__get_module(model)
+        if module is not None and hasattr(module, model):
+            key = '.'.join([model, id])
+            instance: BaseModel = self.storage.all().get(key, None)
+            if instance is not None:
+                instance.__setattr__(attr, value)
+                instance.updated_at = datetime.now()
+                self.storage.all()[key] = instance
+                self.storage.save()
+                return instance
+            else:
+                print('** no instance found **')
+                return None
         else:
-            print('** no instance found **')
-            return
+            print("** class doesn't exist **")
+            return None
 
     def delete_model_by_id(self, model, _id):
         """
@@ -82,13 +98,13 @@ class HBNBService:
             model (str): The entity's class name.
             _id (str): The entity's ID.
         """
-        _module_name = self.__get_module(model)
-        b, _ = self.__module_exists(_module_name)
-        if not b:
-            print("** class doesn't exist **")
+        module = self.__get_module(model)
+        if module is not None and hasattr(module, model):
+            self.__delete_instance(model, _id)
             return
         else:
-            self.__delete_instance(model, _id)
+            print("** class doesn't exist **")
+            return
 
     def fetch_model_by_id(self, model, id):
         """
@@ -98,22 +114,21 @@ class HBNBService:
             model (str): The entity's class name.
             id (str): The entity's ID.
         """
-        module_name = self.__get_module(model)
-        b, module = self.__module_exists(module_name)
-        if b:
-            entity = getattr(module, model)
-            if entity is None:
+        module = self.__get_module(model)
+        if module is not None:
+            if hasattr(module, model):
+                key = '.'.join([model, id])
+                _model = self.storage.all().get(key, None)
+                if _model is None:
+                    print('** no instance found **')
+                    return
+                return _model
+            else:
                 print("** class doesn't exist **")
-                return
+                return None
         else:
             print("** class doesn't exist **")
-            return
-        key = '.'.join([model, id])
-        _model = self.storage.all().get(key, None)
-        if _model is None:
-            print('** no instance found **')
-            return
-        print(_model)
+            return None
 
     def fetch_all(self, model):
         """
@@ -122,18 +137,14 @@ class HBNBService:
         Args:
             model (str): The entity's class name.
         """
-        module_name = self.__get_module(model)
-        b, module = self.__module_exists(module_name)
-        if b:
-            entity = getattr(module, model)
-            if entity is None:
+        module = self.__get_module(model)
+        if module is not None:
+            if not hasattr(module, model):
                 print("** class doesn't exist **")
-                return
-        else:
-            print("** class doesn't exist **")
-            return
-        _models = self.storage.all()
-        return  [str(x) for x in _models.values() if x.__class__.__name__ == model]
+            else:
+                _models = self.storage.all()
+                return [str(x) for x in _models.values()
+                        if x.__class__.__name__ == model]
 
     def fetch_model_count(self, model):
         """
@@ -142,36 +153,33 @@ class HBNBService:
         Args:
             model (str): The entity's class name.
         """
-        module_name = self.__get_module(model)
-        b, module = self.__module_exists(module_name)
-        if b:
-            entity = getattr(module, model)
-            if entity is None:
-                print("** class doesn't exist **")
-                return
+        module = self.__get_module(model)
+        if module is not None and hasattr(module, model):
+            _models = [x for x in self.storage.all().values()
+                       if x.__class__.__name__ == model]
+            return len(_models)
         else:
             print("** class doesn't exist **")
-            return
-        _models = [x for x in self.storage.all().values()
-                   if x.__class__.__name__ == model]
-        print(len(_models))
-        return
+            return None
 
-    def __get_module(self, name):
-        return 'base_model' if name == 'BaseModel' else str(name).lower()
+    def __get_module(self, arg):
+        _module_name = HBNBUtils.to_module_format(arg)
+        module = HBNBUtils.get_module(_module_name)
+        if module is not None:
+            return module
+        else:
+            return None
 
-    def __module_exists(self, module_name):
+    def __save_instance(self, module, class_name):
+        entity = None
         try:
-            _module = importlib.import_module('models.' + module_name)
-            return (True, _module)
-        except (ModuleNotFoundError, AttributeError):
-            return (False, None)
-
-    def __save_instance(self, module, class_name, *args):
-        entity = getattr(module, class_name)
-        instance = entity(*args)
-        print(instance.id)
+            entity = getattr(module, class_name)
+        except AttributeError:
+            print("** class doesn't exist **")
+            return None
+        instance = entity()
         instance.save()
+        return instance.id
 
     def __delete_instance(self, model, _id):
         key = '.'.join([model, _id])
@@ -221,8 +229,9 @@ class HBNBCommand(cmd.Cmd):
         if len(_args) < 1 or args[0] == '':
             print('** class name missing **')
             return
-
-        if self.bnbService.create(_args[0]) is None:
+        _id = self.bnbService.create(_args[0])
+        if _id is not None:
+            print(_id)
             return
 
     def do_update(self, *args):
@@ -248,8 +257,14 @@ class HBNBCommand(cmd.Cmd):
                 print('** value missing **')
                 return
 
-        return self.bnbService.update_model_attribute(_model, _id,
-                                                      _attr, _value)
+        result = self.bnbService.update_model_attribute(_model, _id,
+                                                        _attr, _value)
+
+        if result is not None:
+            print(result)
+            return
+        else:
+            return
 
     def do_destroy(self, *args):
         """Remove a model by id"""
@@ -277,12 +292,14 @@ class HBNBCommand(cmd.Cmd):
             print(result)
 
     def do_count(self, *args):
-        """Prints the number of a model class"""
+        """Prints the size of a model type"""
         _args = args[0].split(' ')
         if len(_args) < 1:
             print('** class name missing **')
 
-        return self.bnbService.fetch_model_count(_args[0])
+        _count = self.bnbService.fetch_model_count(_args[0])
+        if _count is not None:
+            print(_count)
 
     def do_show(self, *args):
         """Prints a model instance"""
@@ -300,8 +317,9 @@ class HBNBCommand(cmd.Cmd):
                 print('** instance id missing **')
                 return
 
-        if self.bnbService.fetch_model_by_id(_model, _id) is None:
-            return
+        result = self.bnbService.fetch_model_by_id(_model, _id)
+        if result is not None:
+            print(result)
 
     def cmdloop(self, intro=None):
         super().cmdloop(intro)
